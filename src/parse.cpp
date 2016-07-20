@@ -80,6 +80,10 @@ PolynomialVectorMatrix parsePolynomialVectorMatrix(XMLElement *xml) {
   m.samplePoints   = parseVector(xml->FirstChildElement("samplePoints"));
   m.sampleScalings = parseVector(xml->FirstChildElement("sampleScalings"));
   m.bilinearBasis  = parsePolynomialVector(xml->FirstChildElement("bilinearBasis"));
+  // Make backward compatible with xml without schmudgenInterval
+  XMLElement * child = xml->FirstChildElement("schmudgenInterval"); 
+  if(child) m.schmudgenInterval = parseVector(child);
+  
   return m;
 }
 

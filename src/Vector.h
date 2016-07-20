@@ -70,4 +70,12 @@ inline Vector multiplyVectors(const Vector &u, const Vector &v) {
   return w;
 }
 
+// The component-wise subtraction w = (v[0]- c, ..., v[n] - c)
+inline Vector subtractConstant(const Vector &u, const Real &c) {
+  Vector w(u.size());
+  for (unsigned int i = 0; i < w.size(); i++)
+    w[i] = c - u[i];
+  return w;
+}
+
 #endif  // SDPB_VECTOR_H_

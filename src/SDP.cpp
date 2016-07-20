@@ -9,6 +9,11 @@
 #include <vector>
 #include "SDP.h"
 
+// Added to print out schmudgenInterval during runtime
+#include <iostream>
+using std::cout;
+using std::endl;
+
 // Given a vector of polynomials {q_0(x), q_1(x), ..., q_n(x)} of
 // degree deg q_m(x) = m, a list of numSamples points x_k and scaling
 // factors s_k, form the (maxDegree+1) x numSamples Matrix
@@ -113,8 +118,47 @@ dualConstraintGroupFromPolVecMat(const PolynomialVectorMatrix &m) {
                                      m.bilinearBasis,
                                      m.samplePoints,
                                      multiplyVectors(m.samplePoints,
-                                                     m.sampleScalings)));
-
+                                                     m.sampleScalings)));      
+  assert( (m.schmudgenInterval.size() == 0) || (m.schmudgenInterval.size() == 2));
+  if (m.schmudgenInterval.size() == 2)
+  {
+  // Check positivity of one extra interval [0, x_1] and [x_2, \inf).
+  // Now matrix Y has four blocks Y_1, Y_2, Y_3, Y_4.
+  // The first two blocks are the same as old ones
+  //
+  //   Y_3: {\sqrt((x_1 - x)(x_2 - x)) q_0(x), ..., \sqrt((x_1 - x)(x_2 - x)) q_delta3(x)}
+  //   Y_4: {\sqrt(x (x_1 - x)(x_2 - x)) q_0(x), ..., \sqrt(x (x_1 - x)(x_2 - x)) q_delta4(x)}
+  //     
+  cout<<"ScumudgenInterval : ("<<m.schmudgenInterval[0]<<", "<<m.schmudgenInterval[1]<<")"<<endl;
+  int delta3 = (g.degree - 2)/2;
+  // a degree-0 PolynomialVectorMatrix only needs one block
+  if (delta3 >= 0)
+    // The \sqrt(x) factors can be accounted for by replacing the
+    // scale factors s_k with s_k (x_1 - x_k)(x_2 - x_k).
+    // Ugly brute force implementation at this point (JHL)
+    g.bilinearBases
+      .push_back(sampleBilinearBasis(delta3, numSamples,
+                                     m.bilinearBasis,
+                                     m.samplePoints,
+                                     multiplyVectors(m.sampleScalings,
+                                     multiplyVectors(
+                                      subtractConstant(m.samplePoints, m.schmudgenInterval[0]),
+                                      subtractConstant(m.samplePoints, m.schmudgenInterval[1])))));
+  int delta4 = (g.degree - 3)/2;
+  // a degree-0 PolynomialVectorMatrix only needs one block
+  if (delta4 >= 0)
+    // The \sqrt(x) factors can be accounted for by replacing the
+    // scale factors s_k with x_k s_k (x_1 - x_k)(x_2 - x_k).
+    g.bilinearBases
+      .push_back(sampleBilinearBasis(delta4, numSamples,
+                                     m.bilinearBasis,
+                                     m.samplePoints,
+                                     multiplyVectors(m.samplePoints,
+                                     multiplyVectors(m.sampleScalings,
+                                     multiplyVectors(
+                                      subtractConstant(m.samplePoints, m.schmudgenInterval[0]),
+                                      subtractConstant(m.samplePoints, m.schmudgenInterval[1]))))));
+    }
   return g;
 }
 

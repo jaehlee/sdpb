@@ -304,6 +304,10 @@ class PolynomialVectorMatrix {
   // polynomial with degree deg(q_m) = m.
   vector<Polynomial> bilinearBasis;
 
+  // x to be positive in 0 <= x <= x_1 and x_2 <= x
+  // the interval is (x_1, x_2)
+  vector<Real> schmudgenInterval;  
+  
   inline const vector<Polynomial>& elt(const int r, const int c) const {
     return elements[r + c*rows];
   }
